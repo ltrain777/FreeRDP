@@ -116,7 +116,7 @@ void freerdp_client_context_free(rdpContext* context)
 		free(instance->pClientEntryPoints);
 		freerdp_free(instance);
 	}
-	// WLog_Uninit(); // Workaround issue https://github.com/FreeRDP/FreeRDP/issues/4524
+	WLog_Uninit();
 }
 
 int freerdp_client_start(rdpContext* context)
