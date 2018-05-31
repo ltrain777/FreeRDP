@@ -157,7 +157,8 @@ BOOL nego_connect(rdpNego* nego)
 
 			if (nego->state == NEGO_STATE_FAIL)
 			{
-				WLog_ERR(TAG, "Protocol Security Negotiation Failure");
+				if (freerdp_get_last_error(nego->transport->context) == FREERDP_ERROR_SUCCESS)
+					WLog_ERR(TAG, "Protocol Security Negotiation Failure");
 				nego->state = NEGO_STATE_FINAL;
 				return FALSE;
 			}
@@ -672,22 +673,18 @@ static BOOL nego_read_request_token_or_cookie(rdpNego* nego, wStream* s)
 	str = Stream_Pointer(s);
 	pos = Stream_GetPosition(s);
 
-	/* minimum length for cookie is 15 */
+	/* minimum length for token is 15 */
 	if (Stream_GetRemainingLength(s) < 15)
 		return TRUE;
 
-	if (!memcmp(Stream_Pointer(s), "Cookie: msts=", 13))
+	if (memcmp(Stream_Pointer(s), "Cookie: mstshash=", 17) != 0)
 	{
 		isToken = TRUE;
-		Stream_Seek(s, 13);
 	}
 	else
 	{
-		/* not a cookie, minimum length for token is 19 */
+		/* not a token, minimum length for cookie is 19 */
 		if (Stream_GetRemainingLength(s) < 19)
-			return TRUE;
-
-		if (memcmp(Stream_Pointer(s), "Cookie: mstshash=", 17))
 			return TRUE;
 
 		Stream_Seek(s, 17);

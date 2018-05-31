@@ -635,7 +635,7 @@ static BOOL check_for_mismatches(const BYTE* planeA, const BYTE* planeB, UINT32 
 		const BYTE a = planeA[x];
 		const BYTE b = planeB[x];
 
-		if (fabsf(a - b) > 2.0f)
+		if (fabsf((float)a - (float)b) > 2.0f)
 		{
 			rc = TRUE;
 			fprintf(stderr, "[%08x] %02x != %02x\n",
@@ -886,7 +886,7 @@ int TestPrimitivesYUV(int argc, char* argv[])
 
 		if (argc > 1)
 		{
-			int rc = sscanf(argv[1], "%l"PRIu32"x%"PRIu32, &roi.width, &roi.height);
+			int rc = sscanf(argv[1], "%"PRIu32"x%"PRIu32, &roi.width, &roi.height);
 
 			if (rc != 2)
 			{
