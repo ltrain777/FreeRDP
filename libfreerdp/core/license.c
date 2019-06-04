@@ -461,6 +461,7 @@ int license_recv(rdpLicense* license, wStream* s)
 
 	if (securityFlags & SEC_ENCRYPT)
 	{
+		WLog_INFO(TAG, "securityFlags & SEC_ENCRYPT.");
 		if (!rdp_decrypt(license->rdp, s, length, securityFlags))
 		{
 			WLog_ERR(TAG, "rdp_decrypt failed");
@@ -470,6 +471,7 @@ int license_recv(rdpLicense* license, wStream* s)
 
 	if (!(securityFlags & SEC_LICENSE_PKT))
 	{
+		WLog_INFO(TAG, "!(securityFlags & SEC_LICENSE_PKT)");
 		int status;
 
 		if (!(securityFlags & SEC_ENCRYPT))
@@ -485,8 +487,10 @@ int license_recv(rdpLicense* license, wStream* s)
 		return 0;
 	}
 
-	if (!license_read_preamble(s, &bMsgType, &flags, &wMsgSize)) /* preamble (4 bytes) */
+	if (!license_read_preamble(s, &bMsgType, &flags, &wMsgSize)) /* preamble (4 bytes) */ {
+		WLog_INFO(TAG, "license_read_preamble returns FALSE");
 		return -1;
+	}
 
 	DEBUG_LICENSE("Receiving %s Packet", LICENSE_MESSAGE_STRINGS[bMsgType & 0x1F]);
 
