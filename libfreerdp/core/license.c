@@ -497,30 +497,42 @@ int license_recv(rdpLicense* license, wStream* s)
 	switch (bMsgType)
 	{
 		case LICENSE_REQUEST:
-			if (!license_read_license_request_packet(license, s))
+			if (!license_read_license_request_packet(license, s)) {
+				WLog_INFO(TAG, "license_recv::license_read_license_request_packet returns FALSE");
 				return -1;
+			}
 
-			if (!license_answer_license_request(license))
+			if (!license_answer_license_request(license)) {
+				WLog_INFO(TAG, "license_recv::license_answer_license_request returns FALSE");
 				return -1;
+			}
 			break;
 
 		case PLATFORM_CHALLENGE:
-			if (!license_read_platform_challenge_packet(license, s))
+			if (!license_read_platform_challenge_packet(license, s)) {
+				WLog_INFO(TAG, "license_recv::license_read_platform_challenge_packet returns FALSE");
 				return -1;
+			}
 
-			if (!license_send_platform_challenge_response_packet(license))
+			if (!license_send_platform_challenge_response_packet(license)) {
+				WLog_INFO(TAG, "license_recv::license_send_platform_challenge_response_packet returns FALSE");
 				return -1;
+			}
 			break;
 
 		case NEW_LICENSE:
 		case UPGRADE_LICENSE:
-			if (!license_read_new_or_upgrade_license_packet(license, s))
+			if (!license_read_new_or_upgrade_license_packet(license, s)) {
+				WLog_INFO(TAG, "license_recv::license_read_new_or_upgrade_license_packet returns FALSE");
 				return -1;
+			}
 			break;
 
 		case ERROR_ALERT:
-			if (!license_read_error_alert_packet(license, s))
+			if (!license_read_error_alert_packet(license, s)) {
+				WLog_INFO(TAG, "license_recv::license_read_error_alert_packet returns FALSE");
 				return -1;
+			}
 			break;
 
 		default:
@@ -841,21 +853,27 @@ BOOL license_read_binary_blob(wStream* s, LICENSE_BLOB* blob)
 {
 	UINT16 wBlobType;
 
-	if (Stream_GetRemainingLength(s) < 4)
+	if (Stream_GetRemainingLength(s) < 4) {
+		WLog_INFO(TAG, "license_read_binary_blob::wStream is less than 4 bytes");
 		return FALSE;
+	}
 
 	Stream_Read_UINT16(s, wBlobType); /* wBlobType (2 bytes) */
 	Stream_Read_UINT16(s, blob->length); /* wBlobLen (2 bytes) */
 
-	if (Stream_GetRemainingLength(s) < blob->length)
+	if (Stream_GetRemainingLength(s) < blob->length) {
+		WLog_INFO(TAG, "license_read_binary_blob::wStream is less than blob length");
 		return FALSE;
+	}
 
 	/*
 	 * Server can choose to not send data by setting length to 0.
 	 * If so, it may not bother to set the type, so shortcut the warning
 	 */
-	if ((blob->type != BB_ANY_BLOB) && (blob->length == 0))
+	if ((blob->type != BB_ANY_BLOB) && (blob->length == 0)) {
+		WLog_INFO(TAG, "license_read_binary_blob::blob.length is zero and not BB_ANY_BLOB");
 		return TRUE;
+	}
 
 	if ((blob->type != wBlobType) && (blob->type != BB_ANY_BLOB))
 	{
@@ -1291,8 +1309,10 @@ BOOL license_read_error_alert_packet(rdpLicense* license, wStream* s)
 	UINT32 dwErrorCode;
 	UINT32 dwStateTransition;
 
-	if (Stream_GetRemainingLength(s) < 8)
+	if (Stream_GetRemainingLength(s) < 8) {
+		WLog_INFO(TAG, "wStream is less than 8 bytes");
 		return FALSE;
+	}
 
 	Stream_Read_UINT32(s, dwErrorCode); /* dwErrorCode (4 bytes) */
 	Stream_Read_UINT32(s, dwStateTransition); /* dwStateTransition (4 bytes) */
