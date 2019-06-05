@@ -161,7 +161,7 @@ static BOOL computeCalHash(const char *hostname, char *hashStr)
 	WINPR_DIGEST_CTX* sha1 = NULL;
 	BOOL ret = FALSE;
 	BYTE hash[20];
-	int i;
+	size_t i;
 
 	if (!(sha1 = winpr_Digest_New()))
 		goto out;
@@ -249,6 +249,7 @@ static BOOL saveCal(rdpSettings *settings, const BYTE *data, int length, char *h
 		goto out;
 	}
 
+	WLog_INFO(TAG, "Try MoveFileEx filepath %s to filepathNew %s ", filepath, filepathNew);
 	ret = MoveFileEx(filepathNew, filepath, MOVEFILE_REPLACE_EXISTING);
 	WLog_INFO(TAG, "MoveFileEx ret %d", ret);
 
