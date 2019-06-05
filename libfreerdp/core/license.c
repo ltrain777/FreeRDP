@@ -1301,8 +1301,11 @@ BOOL license_read_new_or_upgrade_license_packet(rdpLicense* license, wStream* s)
 	}
 
 	license->state = LICENSE_STATE_COMPLETED;
-	ret = saveCal(license->rdp->settings, Stream_Pointer(licenseStream), cbLicenseInfo, license->rdp->settings->ClientHostname);
-	WLog_INFO(TAG, "saveCal less ret %d", ret);
+	ret = TRUE;
+	if (!license->rdp->settings->OldLicenseBehaviour) {
+		ret = saveCal(license->rdp->settings, Stream_Pointer(licenseStream), cbLicenseInfo, license->rdp->settings->ClientHostname);
+		WLog_INFO(TAG, "saveCal less ret %d", ret);
+	}
 out_free_stream:
 	Stream_Free(licenseStream, FALSE);
 out_free_blob:
@@ -1425,8 +1428,10 @@ BOOL license_answer_license_request(rdpLicense* license)
 	BOOL status;
 	char* username;
 
-	if (!license->rdp->settings->OldLicenseBehaviour)
+	if (!license->rdp->settings->OldLicenseBehaviour) {
+		WLog_INFO(TAG, "Not OldLicenseBehaviour");
 		license_data = loadCalFile(license->rdp->settings, license->rdp->settings->ClientHostname, &license_size);
+	}
 
 	if(license_data)
 	{
