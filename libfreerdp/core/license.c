@@ -1343,6 +1343,10 @@ BOOL license_read_error_alert_packet(rdpLicense* license, wStream* s)
 	WLog_INFO(TAG, "logging BOOL %d", FALSE);
 	size_t foo = 1024;
 	WLog_INFO(TAG, "logging size_t %d", foo);
+	if (license->rdp->settings->OldLicenseBehaviour) {
+		WLog_INFO(TAG, "OldLicenseBehaviour %d", license->rdp->settings->OldLicenseBehaviour);
+	}
+	WLog_INFO(TAG, "OldLicenseBehaviour %d", license->rdp->settings->OldLicenseBehaviour);
 	if (!license_read_binary_blob(s, license->ErrorInfo)) /* bbErrorInfo */
 		return FALSE;
 
