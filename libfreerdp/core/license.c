@@ -201,10 +201,8 @@ static BOOL saveCal(rdpSettings *settings, const BYTE *data, int length, char *h
 		WLog_INFO(TAG, "creating directory %s", settings->ConfigPath);
 	}
 
-	if (!(licenseStorePath = GetCombinedPath(settings->ConfigPath, licenseStore))) {
-		WLog_INFO(TAG, "failed to GetCombinedPath %s", settings->ConfigPath);
+	if (!(licenseStorePath = GetCombinedPath(settings->ConfigPath, licenseStore)))
 		goto out;
-	}
 
 	if (!PathFileExistsA(licenseStorePath))
 	{
@@ -216,44 +214,34 @@ static BOOL saveCal(rdpSettings *settings, const BYTE *data, int length, char *h
 		WLog_INFO(TAG, "creating directory %s", licenseStorePath);
 	}
 
-	if (!computeCalHash(hostname, hash)) {
-		WLog_INFO(TAG, "failed to computeCalHash %s", hostname);
+	if (!computeCalHash(hostname, hash))
 		goto out;
-	}
 	sprintf_s(filename, sizeof(filename) - 1, "%s.cal", hash);
 	sprintf_s(filenameNew, sizeof(filenameNew) - 1, "%s.cal.new", hash);
 
-	if (!(filepath = GetCombinedPath(licenseStorePath, filename))) {
-		WLog_INFO(TAG, "failed to GetCombinedPath filename %s", filename);
+	if (!(filepath = GetCombinedPath(licenseStorePath, filename)))
 		goto out;
-	}
 
-	if (!(filepathNew = GetCombinedPath(licenseStorePath, filenameNew))) {
-		WLog_INFO(TAG, "failed to GetCombinedPath filenameNew %s", filenameNew);
+	if (!(filepathNew = GetCombinedPath(licenseStorePath, filenameNew)))
 		goto out;
-	}
 
 	fp = fopen(filepathNew, "wb");
-	if (!fp) {
-		WLog_INFO(TAG, "failed to fopen filepathNew %s", filepathNew);
+	if (!fp)
 		goto out;
-	}
 
 	written = fwrite(data, length, 1, fp);
 	fclose(fp);
 
 	if (written != 1)
 	{
-		WLog_INFO(TAG, "fwrite %d", written);
 		DeleteFile(filepathNew);
 		goto out;
 	}
 
-	WLog_INFO(TAG, "Try MoveFileEx filepath %s to filepathNew %s ", filepath, filepathNew);
+	WLog_DBG(TAG, "Try MoveFileEx filepath %s to filepathNew %s ", filepath, filepathNew);
 	ret = MoveFileEx(filepathNew, filepath, MOVEFILE_REPLACE_EXISTING);
-	WLog_INFO(TAG, "MoveFileEx ret %d", ret);
 	if (ret == FALSE) {
-		WLog_INFO(TAG, "MoveFileEx failed with error (%"PRId32")", GetLastError());
+		WLog_ERR(TAG, "MoveFileEx failed with error (%"PRId32")", GetLastError());
 	}
 
 out:
@@ -477,7 +465,6 @@ int license_recv(rdpLicense* license, wStream* s)
 
 	if (securityFlags & SEC_ENCRYPT)
 	{
-		WLog_INFO(TAG, "securityFlags & SEC_ENCRYPT.");
 		if (!rdp_decrypt(license->rdp, s, length, securityFlags))
 		{
 			WLog_ERR(TAG, "rdp_decrypt failed");
@@ -487,7 +474,6 @@ int license_recv(rdpLicense* license, wStream* s)
 
 	if (!(securityFlags & SEC_LICENSE_PKT))
 	{
-		WLog_INFO(TAG, "!(securityFlags & SEC_LICENSE_PKT)");
 		int status;
 
 		if (!(securityFlags & SEC_ENCRYPT))
@@ -503,52 +489,38 @@ int license_recv(rdpLicense* license, wStream* s)
 		return 0;
 	}
 
-	if (!license_read_preamble(s, &bMsgType, &flags, &wMsgSize)) /* preamble (4 bytes) */ {
-		WLog_INFO(TAG, "license_read_preamble returns FALSE");
+	if (!license_read_preamble(s, &bMsgType, &flags, &wMsgSize)) /* preamble (4 bytes) */
 		return -1;
-	}
 
 	DEBUG_LICENSE("Receiving %s Packet", LICENSE_MESSAGE_STRINGS[bMsgType & 0x1F]);
 
 	switch (bMsgType)
 	{
 	case LICENSE_REQUEST:
-		if (!license_read_license_request_packet(license, s)) {
-			WLog_INFO(TAG, "license_recv::license_read_license_request_packet returns FALSE");
+		if (!license_read_license_request_packet(license, s))
 			return -1;
-		}
 
-		if (!license_answer_license_request(license)) {
-			WLog_INFO(TAG, "license_recv::license_answer_license_request returns FALSE");
+		if (!license_answer_license_request(license))
 			return -1;
-		}
 		break;
 
 	case PLATFORM_CHALLENGE:
-		if (!license_read_platform_challenge_packet(license, s)) {
-			WLog_INFO(TAG, "license_recv::license_read_platform_challenge_packet returns FALSE");
+		if (!license_read_platform_challenge_packet(license, s))
 			return -1;
-		}
 
-		if (!license_send_platform_challenge_response_packet(license)) {
-			WLog_INFO(TAG, "license_recv::license_send_platform_challenge_response_packet returns FALSE");
+		if (!license_send_platform_challenge_response_packet(license))
 			return -1;
-		}
 		break;
 
 	case NEW_LICENSE:
 	case UPGRADE_LICENSE:
-		if (!license_read_new_or_upgrade_license_packet(license, s)) {
-			WLog_INFO(TAG, "license_recv::license_read_new_or_upgrade_license_packet returns FALSE");
+		if (!license_read_new_or_upgrade_license_packet(license, s))
 			return -1;
-		}
 		break;
 
 	case ERROR_ALERT:
-		if (!license_read_error_alert_packet(license, s)) {
-			WLog_INFO(TAG, "license_recv::license_read_error_alert_packet returns FALSE");
+		if (!license_read_error_alert_packet(license, s))
 			return -1;
-		}
 		break;
 
 	default:
@@ -872,27 +844,21 @@ BOOL license_read_binary_blob(wStream* s, LICENSE_BLOB* blob)
 {
 	UINT16 wBlobType;
 
-	if (Stream_GetRemainingLength(s) < 4) {
-		WLog_INFO(TAG, "license_read_binary_blob::wStream is less than 4 bytes");
+	if (Stream_GetRemainingLength(s) < 4)
 		return FALSE;
-	}
 
 	Stream_Read_UINT16(s, wBlobType); /* wBlobType (2 bytes) */
 	Stream_Read_UINT16(s, blob->length); /* wBlobLen (2 bytes) */
 
-	if (Stream_GetRemainingLength(s) < blob->length) {
-		WLog_INFO(TAG, "license_read_binary_blob::wStream is less than blob length");
+	if (Stream_GetRemainingLength(s) < blob->length)
 		return FALSE;
-	}
 
 	/*
 	* Server can choose to not send data by setting length to 0.
 	* If so, it may not bother to set the type, so shortcut the warning
 	*/
-	if ((blob->type != BB_ANY_BLOB) && (blob->length == 0)) {
-		WLog_INFO(TAG, "license_read_binary_blob::blob.length is zero and not BB_ANY_BLOB");
+	if ((blob->type != BB_ANY_BLOB) && (blob->length == 0))
 		return TRUE;
-	}
 
 	if ((blob->type != wBlobType) && (blob->type != BB_ANY_BLOB))
 	{
@@ -1301,16 +1267,13 @@ BOOL license_read_new_or_upgrade_license_packet(rdpLicense* license, wStream* s)
 
 	/* licenseInfo */
 	Stream_Read_UINT32(licenseStream, cbLicenseInfo);
-	if (Stream_GetRemainingLength(licenseStream) < cbLicenseInfo) {
-		WLog_INFO(TAG, "Stream_GetRemainingLength less than cbLicenseInfo %d", cbLicenseInfo);
+	if (Stream_GetRemainingLength(licenseStream) < cbLicenseInfo)
 		goto out_free_stream;
-	}
 
 	license->state = LICENSE_STATE_COMPLETED;
 	ret = TRUE;
 	if (!license->rdp->settings->OldLicenseBehaviour) {
 		ret = saveCal(license->rdp->settings, Stream_Pointer(licenseStream), cbLicenseInfo, license->rdp->settings->ClientHostname);
-		WLog_INFO(TAG, "saveCal less ret %d", ret);
 	}
 out_free_stream:
 	Stream_Free(licenseStream, FALSE);
@@ -1332,21 +1295,12 @@ BOOL license_read_error_alert_packet(rdpLicense* license, wStream* s)
 	UINT32 dwErrorCode;
 	UINT32 dwStateTransition;
 
-	if (Stream_GetRemainingLength(s) < 8) {
-		WLog_INFO(TAG, "wStream is less than 8 bytes");
+	if (Stream_GetRemainingLength(s) < 8)
 		return FALSE;
-	}
 
 	Stream_Read_UINT32(s, dwErrorCode); /* dwErrorCode (4 bytes) */
 	Stream_Read_UINT32(s, dwStateTransition); /* dwStateTransition (4 bytes) */
-	WLog_INFO(TAG, "dwErrorCode %d", dwErrorCode);
-	WLog_INFO(TAG, "logging BOOL %d", FALSE);
-	size_t foo = 1024;
-	WLog_INFO(TAG, "logging size_t %d", foo);
-	if (license->rdp->settings->OldLicenseBehaviour) {
-		WLog_INFO(TAG, "OldLicenseBehaviour %d", license->rdp->settings->OldLicenseBehaviour);
-	}
-	WLog_INFO(TAG, "OldLicenseBehaviour %d", license->rdp->settings->OldLicenseBehaviour);
+
 	if (!license_read_binary_blob(s, license->ErrorInfo)) /* bbErrorInfo */
 		return FALSE;
 
@@ -1438,10 +1392,8 @@ BOOL license_answer_license_request(rdpLicense* license)
 	BOOL status;
 	char* username;
 
-	if (!license->rdp->settings->OldLicenseBehaviour) {
-		WLog_INFO(TAG, "Not OldLicenseBehaviour");
+	if (!license->rdp->settings->OldLicenseBehaviour)
 		license_data = loadCalFile(license->rdp->settings, license->rdp->settings->ClientHostname, &license_size);
-	}
 
 	if(license_data)
 	{

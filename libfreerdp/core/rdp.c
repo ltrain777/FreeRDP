@@ -82,10 +82,8 @@ const char* DATA_PDU_TYPE_STRINGS[80] =
 BOOL rdp_read_security_header(wStream* s, UINT16* flags, UINT16* length)
 {
 	/* Basic Security Header */
-	if ((Stream_GetRemainingLength(s) < 4) || (length && (*length < 4))) {
-		WLog_INFO(TAG, "Header length is less than 4");
+	if ((Stream_GetRemainingLength(s) < 4) || (length && (*length < 4)))
 		return FALSE;
-	}
 
 	Stream_Read_UINT16(s, *flags); /* flags */
 	Stream_Seek(s, 2); /* flagsHi (unused) */
