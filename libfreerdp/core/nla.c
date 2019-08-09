@@ -1977,11 +1977,14 @@ static int nla_decode_ts_request(rdpNla* nla, wStream* s)
 		    !ber_read_octet_string_tag(s, &length) || /* OCTET STRING */
 		    Stream_GetRemainingLength(s) < length)
 		{
+			WLog_ERR(TAG, "negoToken check failed");
 			return -1;
 		}
 
-		if (!sspi_SecBufferAlloc(&nla->negoToken, length))
+		if (!sspi_SecBufferAlloc(&nla->negoToken, length)) {
+			WLog_ERR(TAG, "negoToken sspi_SecBufferAlloc failed");
 			return -1;
+		}
 
 		Stream_Read(s, nla->negoToken.pvBuffer, length);
 		nla->negoToken.cbBuffer = length;
@@ -1991,11 +1994,15 @@ static int nla_decode_ts_request(rdpNla* nla, wStream* s)
 	if (ber_read_contextual_tag(s, 2, &length, TRUE) != FALSE)
 	{
 		if (!ber_read_octet_string_tag(s, &length) || /* OCTET STRING */
-		    Stream_GetRemainingLength(s) < length)
+			Stream_GetRemainingLength(s) < length) {
+			WLog_ERR(TAG, "authInfo check failed");
 			return -1;
+		}
 
-		if (!sspi_SecBufferAlloc(&nla->authInfo, length))
+		if (!sspi_SecBufferAlloc(&nla->authInfo, length)){
+			WLog_ERR(TAG, "authInfo sspi_SecBufferAlloc failed");
 			return -1;
+		}
 
 		Stream_Read(s, nla->authInfo.pvBuffer, length);
 		nla->authInfo.cbBuffer = length;
@@ -2005,11 +2012,15 @@ static int nla_decode_ts_request(rdpNla* nla, wStream* s)
 	if (ber_read_contextual_tag(s, 3, &length, TRUE) != FALSE)
 	{
 		if (!ber_read_octet_string_tag(s, &length) || /* OCTET STRING */
-		    Stream_GetRemainingLength(s) < length)
+		    Stream_GetRemainingLength(s) < length) {
+			WLog_ERR(TAG, "pubKeyAuth check failed");
 			return -1;
+		}
 
-		if (!sspi_SecBufferAlloc(&nla->pubKeyAuth, length))
+		if (!sspi_SecBufferAlloc(&nla->pubKeyAuth, length)) {
+			WLog_ERR(TAG, "pubKeyAuth sspi_SecBufferAlloc failed");
 			return -1;
+		}
 
 		Stream_Read(s, nla->pubKeyAuth.pvBuffer, length);
 		nla->pubKeyAuth.cbBuffer = length;
@@ -2020,8 +2031,10 @@ static int nla_decode_ts_request(rdpNla* nla, wStream* s)
 	{
 		if (ber_read_contextual_tag(s, 4, &length, TRUE) != FALSE)
 		{
-			if (!ber_read_integer(s, &nla->errorCode))
+			if (!ber_read_integer(s, &nla->errorCode)) {
+				WLog_ERR(TAG, "errorCode read int failed");
 				return -1;
+			}
 		}
 
 		if (nla->peerVersion >= 5)
@@ -2029,11 +2042,15 @@ static int nla_decode_ts_request(rdpNla* nla, wStream* s)
 			if (ber_read_contextual_tag(s, 5, &length, TRUE) != FALSE)
 			{
 				if (!ber_read_octet_string_tag(s, &length) || /* OCTET STRING */
-				    Stream_GetRemainingLength(s) < length)
+				    Stream_GetRemainingLength(s) < length) {
+					WLog_ERR(TAG, "errorCode check failed");
 					return -1;
+				}
 
-				if (!sspi_SecBufferAlloc(&nla->ClientNonce, length))
+				if (!sspi_SecBufferAlloc(&nla->ClientNonce, length)) {
+					WLog_ERR(TAG, "pubKeyAuth sspi_SecBufferAlloc failed");
 					return -1;
+				}
 
 				Stream_Read(s, nla->ClientNonce.pvBuffer, length);
 				nla->ClientNonce.cbBuffer = length;
@@ -2046,13 +2063,15 @@ static int nla_decode_ts_request(rdpNla* nla, wStream* s)
 
 int nla_recv_pdu(rdpNla* nla, wStream* s)
 {
-	if (nla_decode_ts_request(nla, s) < 1)
+	if (nla_decode_ts_request(nla, s) < 1) {
+		WLog_ERR(TAG, "nla_decode_ts_request failed");
 		return -1;
+	}
 
 	if (nla->errorCode)
 	{
 		UINT32 code;
-
+		WLog_ERR(TAG, "nla->errorCode: %"PRIu32, nla->errorCode);
 		switch (nla->errorCode)
 		{
 			case STATUS_PASSWORD_MUST_CHANGE:
