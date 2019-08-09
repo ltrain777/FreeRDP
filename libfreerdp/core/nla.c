@@ -2064,7 +2064,7 @@ static int nla_decode_ts_request(rdpNla* nla, wStream* s)
 int nla_recv_pdu(rdpNla* nla, wStream* s)
 {
 	if (nla_decode_ts_request(nla, s) < 1) {
-		WLog_ERR(TAG, "nla_decode_ts_request failed");
+		WLog_ERR(TAG, "nla_recv_pdu -> nla_decode_ts_request failed");
 		return -1;
 	}
 
@@ -2124,8 +2124,10 @@ int nla_recv_pdu(rdpNla* nla, wStream* s)
 		return -1;
 	}
 
-	if (nla_client_recv(nla) < 1)
+	if (nla_client_recv(nla) < 1) {
+		WLog_ERR(TAG, "nla_recv_pdu -> nla_client_recv failed");
 		return -1;
+	}
 
 	return 1;
 }

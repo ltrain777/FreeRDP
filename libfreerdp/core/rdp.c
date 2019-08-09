@@ -1381,6 +1381,7 @@ int rdp_recv_callback(rdpTransport* transport, wStream* s, void* extra)
 	 */
 	if ((rdp->state > CONNECTION_STATE_MCS_CHANNEL_JOIN) && (rdp->state < CONNECTION_STATE_ACTIVE))
 	{
+		WLog_DBG(TAG, "rdp_recv_callback: rdp->state > CONNECTION_STATE_MCS_CHANNEL_JOIN and < CONNECTION_STATE_ACTIVE");
 		if (rdp_client_connect_auto_detect(rdp, s))
 			return 0;
 	}
